@@ -105,6 +105,9 @@ class Point(Generic[T]):
     def __neg__(s) -> Point[T]:
         return Point([-x for x in s])
 
+    def __abs__(s) -> Point[T]:
+        return Point.of(*map(lambda x: abs(x), s))
+
     def __mul__(s, d: T) -> Point[T]:
         return Point([a * d for a in s])
 
