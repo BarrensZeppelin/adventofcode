@@ -3,12 +3,14 @@ from __future__ import annotations
 import re
 import sys
 from collections import Counter, defaultdict, deque
-from functools import lru_cache, partialmethod, total_ordering
+from functools import lru_cache, total_ordering
 from heapq import *
 from itertools import combinations
 from itertools import combinations_with_replacement as combr
 from itertools import permutations, product
 from typing import Any, DefaultDict, Generic, Iterable, Iterator, List, TypeVar
+
+sys.setrecursionlimit(1 << 30)
 
 
 def ints(inp: str = None) -> Iterator[int]:
@@ -21,6 +23,19 @@ def floats(inp: str = None) -> Iterator[float]:
 
 def lines(inp: str = None) -> List[str]:
     return (inp or sys.stdin.read()).splitlines()
+
+
+def prints(*args):
+    """
+    Function for printing the solution to a puzzle.
+    Also copies the solution to the clipboard.
+    """
+    from subprocess import run
+
+    ans = " ".join(map(str, args))
+    print(ans)
+    run(["xsel", "-bi"], input=ans, check=True, text=True)
+    print("(Copied to clipboard)")
 
 
 T = TypeVar("T", int, float)

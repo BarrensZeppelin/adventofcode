@@ -17,4 +17,4 @@ for _ in range(256):
     C = NC
 
 
-print(sum(C.values()))
+prints(sum(C.values()))
