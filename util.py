@@ -111,10 +111,10 @@ class Point(Generic[T]):
 
     # Geometry stuff
 
-    def __add__(s, o: Point[T]) -> Point[T]:
+    def __add__(s, o: Iterable[T]) -> Point[T]:
         return Point([a + b for a, b in zip(s, o)])
 
-    def __sub__(s, o: Point[T]) -> Point[T]:
+    def __sub__(s, o: Iterable[T]) -> Point[T]:
         return Point([a - b for a, b in zip(s, o)])
 
     def __neg__(s) -> Point[T]:
@@ -134,7 +134,7 @@ class Point(Generic[T]):
     def __truediv__(s, d: T) -> Point[float]:
         return Point([a / d for a in s])
 
-    def dot(s, o: Point[T]) -> T:
+    def dot(s, o: Iterable[T]) -> T:
         return sum(a * b for a, b in zip(s, o))
 
     __matmul__ = dot
