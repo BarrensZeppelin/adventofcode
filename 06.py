@@ -1,4 +1,5 @@
 #! /usr/bin/env pypy3
+# 34/8
 from util import *
 
 sys.stdin = open(__file__.replace('py', 'in'))

@@ -1,4 +1,5 @@
 #! /usr/bin/env pypy3
+# 61/8
 from util import *
 
 if len(sys.argv) == 1:
