@@ -12,6 +12,8 @@ from typing import Any, DefaultDict, Generic, Iterable, Iterator, List, TypeVar
 
 sys.setrecursionlimit(1 << 30)
 
+DIR = ((1, 0), (0, 1), (-1, 0), (0, -1))
+
 
 def ints(inp: str = None) -> Iterator[int]:
     return map(int, re.findall(r"-?\d+", inp or sys.stdin.read()))
