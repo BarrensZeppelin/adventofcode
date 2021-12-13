@@ -22,8 +22,4 @@ for s in lines(B):
 
     dots = ndots
 
-
-mx, my = map(max, zip(*dots))
-
-for y in range(my+1):
-    print(''.join('😂' if (x, y) in dots else '  ' for x in range(mx+1)))
+print_coords(dots)

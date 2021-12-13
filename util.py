@@ -8,7 +8,8 @@ from heapq import *
 from itertools import combinations
 from itertools import combinations_with_replacement as combr
 from itertools import permutations, product
-from typing import Any, DefaultDict, Generic, Iterable, Iterator, List, TypeVar
+from typing import (Any, Collection, DefaultDict, Generic, Iterable, Iterator,
+                    List, Sequence, Tuple, TypeVar)
 
 sys.setrecursionlimit(1 << 30)
 
@@ -167,7 +168,7 @@ class Point(Generic[T]):
         return s.dist2() ** 0.5
 
 
-def make_adj(edges, both=False):
+def make_adj(edges, both=False) -> DefaultDict[Any, List]:
     adj = defaultdict(list)
     for a, b in edges:
         adj[a].append(b)
@@ -176,7 +177,7 @@ def make_adj(edges, both=False):
     return adj
 
 
-def make_wadj(edges, both=False):
+def make_wadj(edges, both=False) -> DefaultDict[Any, List[Tuple[Any, Any]]]:
     adj = defaultdict(list)
     for a, b, w in edges:
         adj[a].append((b, w))
@@ -234,6 +235,23 @@ def topsort(adj):
     return Q
 
 
-def tile(L, S):
+U = TypeVar("U")
+
+
+def tile(L: Sequence[U], S: int) -> List[Sequence[U]]:
     assert len(L) % S == 0
     return [L[i : i + S] for i in range(0, len(L), S)]
+
+
+def print_coords(L: Collection[Tuple[int, int]]):
+    xs, ys = zip(*L)
+    min_x, max_x = min(xs), max(xs)
+    min_y, max_y = min(ys), max(ys)
+    print("X", min_x, max_x)
+    print("Y", min_y, max_y)
+
+    R = [["  "] * (max_x - min_x + 1) for _ in range(max_y - min_y + 1)]
+    for x, y in L:
+        R[y-min_y][x-min_x] = "😂"
+
+    print(*map("".join, R), sep="\n")
