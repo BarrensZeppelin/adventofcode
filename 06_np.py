@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-# 34/8
 from util import *
 
 sys.stdin = open(__file__.replace("_np.py", ".in"))
