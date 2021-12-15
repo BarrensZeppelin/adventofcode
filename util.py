@@ -235,10 +235,10 @@ def topsort(adj):
     return Q
 
 
-U = TypeVar("U")
+_U = TypeVar("_U")
 
 
-def tile(L: Sequence[U], S: int) -> List[Sequence[U]]:
+def tile(L: Sequence[_U], S: int) -> List[Sequence[_U]]:
     assert len(L) % S == 0
     return [L[i : i + S] for i in range(0, len(L), S)]
 
@@ -252,6 +252,15 @@ def print_coords(L: Collection[Tuple[int, int]]):
 
     R = [["  "] * (max_x - min_x + 1) for _ in range(max_y - min_y + 1)]
     for x, y in L:
-        R[y-min_y][x-min_x] = "😂"
+        R[y - min_y][x - min_x] = "😂"
 
     print(*map("".join, R), sep="\n")
+
+
+def neighbours(
+    x: int, y: int, dirs: Iterable[Tuple[int, int]] = DIR, V=None
+) -> Iterator[Tuple[int, int]]:
+    for dx, dy in dirs:
+        nx, ny = x + dx, y + dy
+        if V is None or (nx, ny) in V:
+            yield nx, ny
