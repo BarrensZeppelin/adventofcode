@@ -20,7 +20,6 @@ V = set(product(range(RW), range(RH)))  # valid tiles
 
 while Q:
     d, x, y = heappop(Q)
-    if d > D[y][x]: continue
 
     if (x+1, y+1) in ((RW, RH), (W, H)):
         prints(d)
