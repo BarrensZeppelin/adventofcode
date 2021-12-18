@@ -8,8 +8,9 @@ from heapq import *
 from itertools import combinations
 from itertools import combinations_with_replacement as combr
 from itertools import permutations, product
-from typing import (Any, Collection, DefaultDict, Generic, Iterable, Iterator,
-                    List, Sequence, Tuple, TypeVar)
+from typing import (Any, Callable, Collection, DefaultDict, Dict, Generic,
+                    Iterable, Iterator, List, Mapping, MutableSet, Sequence,
+                    Tuple, TypeVar)
 
 sys.setrecursionlimit(1 << 30)
 
@@ -255,6 +256,25 @@ def print_coords(L: Collection[Tuple[int, int]]):
         R[y - min_y][x - min_x] = "😂"
 
     print(*map("".join, R), sep="\n")
+
+
+def binary_search(f: Callable[[int], bool], lo: int, hi: int = None) -> int:
+    " Returns the first i >= lo such that f(i) == True "
+    if hi is None:
+        assert lo >= 0
+        hi = lo + 1
+        while not f(hi):
+            lo, hi = hi, hi * 2
+
+    assert lo <= hi
+    while lo < hi:
+        m = (lo + hi) // 2
+        if f(m):
+            hi = m
+        else:
+            lo = m + 1
+
+    return lo
 
 
 def neighbours(
