@@ -1,45 +1,33 @@
 #! /usr/bin/env pypy3
+from functools import reduce
+
 from util import *
 
 if len(sys.argv) == 1:
     sys.stdin = open(__file__.replace("py", "in"))
 
-alg = input()
-input()
+alg, _, *I = lines()
 
-I = [l.rstrip() for l in sys.stdin]
+D = {(x, y): c == "#" for y, l in enumerate(I) for x, c in enumerate(l)}
 
-D = defaultdict(bool)
-for y, l in enumerate(I):
-    for x, c in enumerate(l):
-        D[(x, y)] = c == '#'
-
-
-def pr(ex):
-    l = []
-    for k, v in D.items():
-        if v == ex:
-            l.append(k)
-
-    print_coords(l)
-
-def f(x, y):
-    r = ''.join('01'[D[(x+dx, y+dy)]] for dy in range(-1, 2) for dx in range(-1, 2))
-    return alg[int(r, 2)] == '#'
-
+H, W = len(I), len(I[0])
 
 for time in range(50):
-    ND = defaultdict(lambda time=time: time % 2 == 0)
-
-    xs, ys = zip(*D)
-    minx, maxx = min(xs), max(xs)
-    miny, maxy = min(ys), max(ys)
-
-    N = 1
-    for y in range(miny-N, maxy+N+1):
-        for x in range(minx-N, maxx+N+1):
-            ND[(x, y)] = f(x, y)
-    D = ND
+    D = {
+        (x, y): alg[
+            reduce(
+                lambda acc, v: acc * 2 + v,
+                (
+                    D.get((x + dx, y + dy), time % 2)
+                    for dy in range(-1, 2)
+                    for dx in range(-1, 2)
+                ),
+            )
+        ]
+        == "#"
+        for y in range(-time - 1, H + time + 1)
+        for x in range(-time - 1, W + time + 1)
+    }
 
     if time in (1, 49):
         prints(sum(D.values()))
