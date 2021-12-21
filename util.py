@@ -7,7 +7,7 @@ from functools import lru_cache, total_ordering
 from heapq import *
 from itertools import combinations
 from itertools import combinations_with_replacement as combr
-from itertools import permutations, product
+from itertools import cycle, permutations, product, repeat
 from typing import (Any, Callable, Collection, DefaultDict, Dict, Generic,
                     Iterable, Iterator, List, Mapping, MutableSet, Sequence,
                     Tuple, TypeVar)
