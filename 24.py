@@ -14,7 +14,7 @@ cache = [set() for _ in range(14)]
 VARS = 'wxyz'
 
 def run(sec_no: int, pz: int) -> int:
-    if sec_no == N:
+    if sec_no == N or pz > 10 ** 7:
         return 0 if pz == 0 else -1
 
     if pz in cache[sec_no]: return -1
