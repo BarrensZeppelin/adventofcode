@@ -10,25 +10,16 @@ secs = [[s.split() for s in lines(sec)] for sec in secs]
 N = len(secs)
 assert N == 14
 
+op_map = dict(zip('add mul div mod'.split(), '+ * // %'.split()))
+
 generated_code = ''
 for i, sec in enumerate(secs):
 	opt = []
 	for instr, x, y in sec:
-		if instr == 'add':
-			f = '+'
-		elif instr == 'mul':
-			f = '*'
-		elif instr == 'div':
-			f = '//'
-		elif instr == 'mod':
-			f = '%'
-		elif instr == 'eql':
+		if instr == 'eql':
 			opt.append(f'{x} = int({x} == {y})')
-			continue
 		else:
-			assert False, instr
-
-		opt.append(f'{x} {f}= {y}')
+			opt.append(f'{x} {op_map[instr]}= {y}')
 
 	generated_code += f'def f_{i}(w, z, x=0, y=0):\n'
 	opt.append('return z')
