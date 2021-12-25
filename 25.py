@@ -26,12 +26,8 @@ for step in range(10 ** 10):
     for C, (dx, dy) in zip('>v', ((1, 0), (0, 1))):
         ND = {}
         for (x, y), c in D.items():
-            if c != C:
-                ND[(x, y)] = c
-                continue
-
             nx, ny = (x + dx) % W, (y + dy) % H
-            if (nx, ny) not in D:
+            if c == C and (nx, ny) not in D:
                 moved = True
                 ND[(nx, ny)] = c
             else:
