@@ -59,21 +59,49 @@ from bisect import *
 
 from tqdm import tqdm
 
+lmask = 2 ** 8 - 1
+
 for *me, on in tqdm(cub):
-    for x, y, z in product(*(
-        range(bisect_left(l, a), bisect_right(l, b))
+    xb, yb, zb = (
+        (bisect_left(l, a), bisect_right(l, b))
         for a, b, l in zip(
             me[::2],
             me[1::2],
             (xs, ys, zs),
-        ))):
-        C[x][y][z] = on
+        )
+    )
+    z1, z2 = zb
+
+    for x in range(*xb):
+        for y in range(*yb):
+            b1 = (z1 & ~7) + 8
+            for z in range(z1, min(b1, z2)):
+                C[x][y][z] = on
+
+            while b1 + 8 <= z2:
+                C[x][y].bytes[b1 // 8] = lmask * on
+                b1 += 8
+
+            for z in range(b1, z2):
+                C[x][y][z] = on
+
+
+idx = [[]]
+for bs in range(1, 2 ** 8):
+    nl = [i + 1 for i in idx[bs >> 1]]
+    if bs & 1:
+        nl.append(0)
+    idx.append(nl)
+
 
 res = 0
-for x, l in enumerate(C):
-    for y, l2 in enumerate(l):
-        for z, on in enumerate(l2):
-            if on:
-                res += (xs[x + 1] - xs[x]) * (ys[y + 1] - ys[y]) * (zs[z + 1] - zs[z])
+for x in range(X-1):
+    xdiff = (xs[x + 1] - xs[x])
+    for y in range(Y-1):
+        area = xdiff * (ys[y + 1] - ys[y])
+        for zb, b in enumerate(C[x][y].bytes):
+            zb *= 8
+            for i in idx[b]:
+                res += area * (zs[zb + i + 1] - zs[zb + i])
 
 prints(res)
