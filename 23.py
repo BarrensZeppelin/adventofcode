@@ -47,13 +47,6 @@ W = len('#...B.......#')
 H = max(y for l in P for _, y in l) + 1
 print(H)
 
-def printr(rev):
-    S = [['.'] * W for _ in range(H)]
-    for (x, y), c in rev.items():
-        S[y][x] = c
-
-    print('\n'.join(''.join(s) for s in S))
-
 while Q:
     d, state = heappop(Q)
     if d > dist[state]: continue
@@ -133,9 +126,9 @@ while Q:
                 nstate[idx] = tuple(sorted(new_l))
 
                 """
-                printr(rev)
+                print_coords(rev, '.')
                 print()
-                printr(mkrev(nstate))
+                print_coords(mkrev(nstate), '.')
                 print('-' * W)
                 """
 
@@ -143,6 +136,6 @@ while Q:
                 push(d + move, tuple(nstate))
 
     if ok:
-        printr(rev)
+        print_coords(rev, '.')
         prints(d)
         break

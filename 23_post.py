@@ -50,13 +50,6 @@ def is_correct(rev, x, y):
 W = len('#...B.......#')
 H = max(y for l in P for _, y in l) + 1
 
-def printr(rev):
-    S = [['.'] * W for _ in range(H)]
-    for (x, y), c in rev.items():
-        S[y][x] = c
-
-    print('\n'.join(''.join(s) for s in S))
-
 while Q:
     d, state = heappop(Q)
     if d > dist[state]: continue
@@ -126,6 +119,6 @@ while Q:
 
 
     if ok:
-        printr(rev)
+        print_coords(rev, '.')
         prints(d)
         break

@@ -244,16 +244,24 @@ def tile(L: Sequence[_U], S: int) -> List[Sequence[_U]]:
     return [L[i : i + S] for i in range(0, len(L), S)]
 
 
-def print_coords(L: Collection[Tuple[int, int]]):
+def print_coords(L: Collection[Tuple[int, int]], empty = ' '):
+    import collections.abc
+
     xs, ys = zip(*L)
     min_x, max_x = min(xs), max(xs)
     min_y, max_y = min(ys), max(ys)
     print("X", min_x, max_x)
     print("Y", min_y, max_y)
 
-    R = [["  "] * (max_x - min_x + 1) for _ in range(max_y - min_y + 1)]
-    for x, y in L:
-        R[y - min_y][x - min_x] = "😂"
+    R = [[empty] * (max_x - min_x + 1) for _ in range(max_y - min_y + 1)]
+
+    if isinstance(L, collections.abc.Mapping):
+        for (x, y), c in L.items():
+            assert len(c) == 1, ((x, y), c)
+            R[y - min_y][x - min_x] = c
+    else:
+        for x, y in L:
+            R[y - min_y][x - min_x] = "#"
 
     print(*map("".join, R), sep="\n")
 
