@@ -11,15 +11,6 @@ W = len(G[0])
 
 D = {(x, y): c for y, l in enumerate(G) for x, c in enumerate(l) if c != '.'}
 
-def printr(D):
-    L = [['.'] * W for _ in range(H)]
-    for (x, y), c in D.items():
-        L[y][x] = c
-
-    for l in L:
-        print(''.join(l))
-    print()
-
 for step in range(10 ** 10):
     moved = False
 
@@ -34,7 +25,7 @@ for step in range(10 ** 10):
                 ND[(x, y)] = c
 
         D = ND
-        #printr(D)
+        #print_coords(D, '.')
 
     if not moved:
         prints(step+1)
