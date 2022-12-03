@@ -46,3 +46,11 @@ def prints(*args):
     print("(Copied to clipboard)")
 
 
+_U = TypeVar("_U")
+
+
+def tile(L: Sequence[_U], S: int) -> list[Sequence[_U]]:
+    assert len(L) % S == 0
+    return [L[i : i + S] for i in range(0, len(L), S)]
+
+
