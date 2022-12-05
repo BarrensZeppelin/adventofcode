@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import math
 import re
 import sys
-import math
 from collections import Counter, defaultdict, deque
 from functools import lru_cache, total_ordering
 from heapq import heapify, heappop, heappush, heappushpop, heapreplace
@@ -52,5 +52,12 @@ _U = TypeVar("_U")
 def tile(L: Sequence[_U], S: int) -> list[Sequence[_U]]:
     assert len(L) % S == 0
     return [L[i : i + S] for i in range(0, len(L), S)]
+
+
+def rotate(M: Iterable[Iterable[_U]], times=1) -> list[list[_U]]:
+    "Rotate matrix ccw"
+    for _ in range(times % 4):
+        M = list(map(list, zip(*M)))[::-1]  # type: ignore
+    return M  # type: ignore
 
 
