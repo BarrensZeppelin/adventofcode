@@ -225,3 +225,10 @@ def print_coords(L: Collection[tuple[int, int]], empty=" "):
     print(*map("".join, R), sep="\n")
 
 
+def neighbours(
+    x: int, y: int, dirs: Iterable[tuple[int, int]] = DIR, V=None
+) -> Iterator[tuple[int, int]]:
+    for dx, dy in dirs:
+        nx, ny = x + dx, y + dy
+        if V is None or (nx, ny) in V:
+            yield nx, ny
