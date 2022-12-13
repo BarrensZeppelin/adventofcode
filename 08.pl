@@ -13,9 +13,8 @@ main :-
     ), !,
 
     %leash(-all), trace,
-    % I don't understand why distinct/the discriminator is necessary 🙁
-    aggregate_all(count, X-Y, visible(X, Y, N), P1),
-    %findall(true, distinct(visible(X, Y, N)), Ls),
+    aggregate_all(count, visible(X, Y, N), P1),
+    %findall(true, visible(X, Y, N), Ls),
     %length(Ls, P1),
     format("Part 1: ~d~n", [P1]),
     aggregate_all(max(S), scenic_score(X, Y, N, S), P2),
@@ -24,7 +23,7 @@ main :-
 visible(X, Y, N) :-
     height(X, Y, H),
     H2 #< H,
-    (
+    once(
         X is 1; Y is 1; X is N; Y is N;
         aggregate_all(max(H3), (X2 #< X, height(X2, Y, H3)), H2) ;
         aggregate_all(max(H3), (X2 #> X, height(X2, Y, H3)), H2) ;
