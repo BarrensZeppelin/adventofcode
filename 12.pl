@@ -9,9 +9,6 @@ height(C, H) :- C \= 'E', C \= 'S',
 	H is Code - 97.
 
 main :-
-	% This program takes ~30s to execute, and I don't know enough about Prolog
-	% to fix it. Perhaps it would help to pre-constrain the points that are
-	% passed to can_traverse with between.
 	read_string(user_input, _, Data),
 	split_string(Data, "\n", "\n", Lines),
 	length(Lines, H),
@@ -46,6 +43,7 @@ can_traverse(A, B) :-
 	X1-Y1 = A, X2-Y2 = B,
 	DX #= X2 - X1, DY #= Y2 - Y1,
 	abs(DX) + abs(DY) #= 1,
-	H2 - H1 #=< 1,
+	label([X2, Y2]),
 	value(A, V1), height(V1, H1),
-	value(B, V2), height(V2, H2).
+	value(B, V2), height(V2, H2),
+	H2 - H1 =< 1.
