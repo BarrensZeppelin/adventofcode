@@ -11,8 +11,8 @@ from heapq import heapify, heappop, heappush, heappushpop, heapreplace
 from itertools import combinations
 from itertools import combinations_with_replacement as combr
 from itertools import cycle, permutations, product, repeat
-from typing import (Any, Callable, Collection, Generic, Iterable, Iterator,
-                    Mapping, Sequence, TypeVar)
+from typing import (Any, Callable, Collection, DefaultDict, Generic, Hashable,
+                    Iterable, Iterator, Mapping, Sequence, TypeVar)
 
 sys.setrecursionlimit(1 << 30)
 
@@ -33,7 +33,7 @@ def lines(inp: str | None = None) -> list[str]:
     return (inp or sys.stdin.read()).splitlines()
 
 
-def prints(*args):
+def prints(*args, copy=len(sys.argv) == 1):
     """
     Function for printing the solution to a puzzle.
     Also copies the solution to the clipboard.
