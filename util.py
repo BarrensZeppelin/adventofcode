@@ -42,8 +42,9 @@ def prints(*args, copy=len(sys.argv) == 1):
 
     ans = " ".join(map(str, args))
     print(ans)
-    run(["xsel", "-bi"], input=ans, check=True, text=True)
-    print("(Copied to clipboard)")
+    if copy:
+        run(["xsel", "-bi"], input=ans, check=True, text=True)
+        print("(Copied to clipboard)")
 
 
 T = TypeVar("T", int, float)
