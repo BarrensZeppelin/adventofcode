@@ -189,6 +189,32 @@ class Point(Generic[T]):
         return Point([s.x * co - s.y * si, s.x * si + s.y * co])
 
 
+_N = TypeVar("_N", bound=Hashable)
+
+
+def bfs(
+    adj: Mapping[_N, Iterable[_N]], *starts: _N
+) -> tuple[dict[_N, int], list[_N], dict[_N, _N]]:
+    assert starts
+
+    D = {}
+    Q = []
+    prev: dict[_N, _N] = {}
+    for s in starts:
+        D[s] = 0
+        Q.append(s)
+        prev[s] = s
+
+    for i in Q:
+        d = D[i]
+        for j in adj[i]:
+            if j not in D:
+                D[j] = d + 1
+                prev[j] = i
+                Q.append(j)
+    return D, Q, prev
+
+
 _U = TypeVar("_U")
 
 
