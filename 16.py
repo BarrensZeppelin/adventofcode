@@ -63,6 +63,9 @@ for time in range(MIN+1):
         estimate = 0
         for b, i in nonzi.items():
             if not opened & (1 << i):
+                # Writing |= here instead of += was a typo.
+                # It definitely makes the heuristic invalid, I was just lucky
+                # that it didn't result in a WA on my input.
                 estimate |= (MIN-time-1) * rates[b]
 
         if rate + estimate < best: continue
