@@ -215,6 +215,22 @@ def bfs(
     return D, Q, prev
 
 
+def topsort(adj: Mapping[_N, Iterable[_N]]) -> tuple[list[_N], bool]:
+    "Flag is true iff. graph is cyclic"
+    indeg: defaultdict[_N, int] = defaultdict(int)
+    for i, l in adj.items():
+        indeg[i] += 0  # make sure all nodes are in indeg
+        for j in l:
+            indeg[j] += 1
+    Q = [i for i in adj if indeg[i] == 0]
+    for i in Q:
+        for j in adj[i]:
+            indeg[j] -= 1
+            if indeg[j] == 0:
+                Q.append(j)
+    return Q, len(Q) != len(indeg)
+
+
 _U = TypeVar("_U")
 
 
