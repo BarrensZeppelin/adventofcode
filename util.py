@@ -19,6 +19,7 @@ sys.setrecursionlimit(1 << 30)
 # E N W S
 DIR = ((1, 0), (0, 1), (-1, 0), (0, -1))
 HEXDIR = ((2, 0), (1, 1), (-1, 1), (-2, 0), (-1, -1), (1, -1))
+OCTDIR = ((1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1))
 
 
 def ints(inp: str | None = None) -> Iterator[int]:
@@ -59,7 +60,8 @@ class Point(Generic[T]):
     c: list[T]
     __slots__ = ("c",)
 
-    def __init__(self, c: list[T]):
+    def __init__(self, c: list[T] | tuple[T, ...]):
+        if isinstance(c, tuple): c = list(c)
         self.c = c
 
     @classmethod
