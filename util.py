@@ -342,6 +342,7 @@ def binary_search(f: Callable[[int], bool], lo: int, hi: int | None = None) -> i
     while lo < hi:
         m = (lo + hi) // 2
         if f(m):
+            if m == hi: m -= 1
             hi = m
         else:
             lo = m + 1
