@@ -332,22 +332,23 @@ def print_coords(L: Collection[tuple[int, int]], empty=" "):
 
 def binary_search(f: Callable[[int], bool], lo: int, hi: int | None = None) -> int:
     "Returns the first i >= lo such that f(i) == True"
+    lo, offset = 0, lo
     if hi is None:
-        assert lo >= 0
-        hi = lo + 1
-        while not f(hi):
+        hi = 1
+        while not f(hi+offset):
             lo, hi = hi, hi * 2
+    else:
+        hi -= offset
 
     assert lo <= hi
     while lo < hi:
         m = (lo + hi) // 2
-        if f(m):
-            if m == hi: m -= 1
+        if f(m+offset):
             hi = m
         else:
             lo = m + 1
 
-    return lo
+    return lo+offset
 
 
 def binary_search_float(
