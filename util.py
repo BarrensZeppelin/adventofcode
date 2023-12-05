@@ -48,6 +48,39 @@ def prints(*args, copy=len(sys.argv) == 1):
         print("(Copied to clipboard)")
 
 
+def cut_interval(left: int, right: int, cut_left: int, cut_right: int) -> None | tuple[
+    tuple[int, int] | None,
+    tuple[int, int],
+    tuple[int, int] | None,
+]:
+    """
+    Cuts an [incl, excl) interval with another.
+    Returns None if there is no overlap, otherwise returns the three intervals:
+    1. The part of the interval to the left of the cut (may be None)
+    2. The intersection of the two intervals
+    3. The part of the interval to the right of the cut (may be None)
+    """
+    assert left < right
+    if right <= cut_left or cut_right <= left:
+        return None
+    return (
+        (left, cut_left) if left < cut_left else None,
+        (max(left, cut_left), min(right, cut_right)),
+        (cut_right, right) if cut_right < right else None,
+    )
+
+
+def merge_intervals(intervals: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    "Sorts the intervals and merges overlapping ones"
+    S: list[tuple[int, int]] = []
+    for a, b in sorted(intervals):
+        if S and S[-1][1] >= a:
+            a, c = S.pop()
+            b = max(b, c)
+        S.append((a, b))
+    return S
+
+
 T = TypeVar("T", int, float)
 
 
@@ -304,7 +337,7 @@ def tile(L: Sequence[_U], S: int) -> list[Sequence[_U]]:
 def rotate(M: Iterable[Iterable[_U]], times=1) -> list[list[_U]]:
     "Rotate matrix ccw"
     for _ in range(times % 4):
-        M = list(map(list, zip(*M)))[::-1]  # type: ignore
+        M = list(map(list, zip(*M)))[::-1]
     return M  # type: ignore
 
 
