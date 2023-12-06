@@ -48,6 +48,9 @@ def prints(*args, copy=len(sys.argv) == 1):
         print("(Copied to clipboard)")
 
 
+def ceildiv(a: int, b: int) -> int: return -(a // -b)
+
+
 def cut_interval(left: int, right: int, cut_left: int, cut_right: int) -> None | tuple[
     tuple[int, int] | None,
     tuple[int, int],
