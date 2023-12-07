@@ -337,6 +337,11 @@ def tile(L: Sequence[_U], S: int) -> list[Sequence[_U]]:
     return [L[i : i + S] for i in range(0, len(L), S)]
 
 
+def windows(L: Sequence[_U], S: int) -> list[Sequence[_U]]:
+    assert len(L) >= S
+    return [L[i : i + S] for i in range(len(L) - S + 1)]
+
+
 def rotate(M: Iterable[Iterable[_U]], times=1) -> list[list[_U]]:
     "Rotate matrix ccw"
     for _ in range(times % 4):
