@@ -11,13 +11,14 @@ from heapq import heapify, heappop, heappush, heappushpop, heapreplace
 from itertools import combinations
 from itertools import combinations_with_replacement as combr
 from itertools import cycle, permutations, product, repeat
-from typing import (Any, Callable, Collection, DefaultDict, Generic, Hashable,
+from typing import (Callable, Collection, DefaultDict, Generic, Hashable,
                     Iterable, Iterator, Mapping, Sequence, TypeVar)
 
 sys.setrecursionlimit(1 << 30)
 
 # E N W S
-DIR = ((1, 0), (0, 1), (-1, 0), (0, -1))
+DIR = DIR_NORTHPOS = ((1, 0), (0, 1), (-1, 0), (0, -1))
+DIR_NORTHNEG = ((1, 0), (0, -1), (-1, 0), (0, 1))
 HEXDIR = ((2, 0), (1, 1), (-1, 1), (-2, 0), (-1, -1), (1, -1))
 OCTDIR = ((1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1))
 
