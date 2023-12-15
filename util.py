@@ -10,7 +10,7 @@ from functools import lru_cache, total_ordering
 from heapq import heapify, heappop, heappush, heappushpop, heapreplace
 from itertools import combinations
 from itertools import combinations_with_replacement as combr
-from itertools import cycle, permutations, product, repeat
+from itertools import cycle, groupby, permutations, product, repeat
 from typing import (Callable, Collection, DefaultDict, Generic, Hashable,
                     Iterable, Iterator, Mapping, Sequence, TypeVar)
 
@@ -341,6 +341,10 @@ def tile(L: Sequence[_U], S: int) -> list[Sequence[_U]]:
 def windows(L: Sequence[_U], S: int) -> list[Sequence[_U]]:
     assert len(L) >= S
     return [L[i : i + S] for i in range(len(L) - S + 1)]
+
+
+def run_length_encoding(L: list[_U]) -> list[tuple[_U, int]]:
+    return [(c, len(list(g))) for c, g in groupby(L)]
 
 
 def rotate(M: Iterable[Iterable[_U]], times=1) -> list[list[_U]]:
