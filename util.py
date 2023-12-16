@@ -10,7 +10,7 @@ from functools import cache, lru_cache, total_ordering
 from heapq import heapify, heappop, heappush, heappushpop, heapreplace
 from itertools import combinations
 from itertools import combinations_with_replacement as combr
-from itertools import cycle, groupby, permutations, product, repeat
+from itertools import cycle, groupby, permutations, product, repeat, starmap
 from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
 from typing import Generic, Hashable, TypeVar
 
