@@ -119,5 +119,5 @@ for si, (scc, dp) in enumerate(zip(sccs, DP)):
                 assert sj < si, (si, sj)
                 dp |= DP[sj]
 
-best = max(dp.popcount() for dp in DP)-1
+best = max(DP[node_to_scc[n]].popcount() for n in init)-1
 print(f"Part 2: {best}")
