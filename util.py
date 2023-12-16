@@ -6,13 +6,13 @@ import math
 import re
 import sys
 from collections import Counter, defaultdict, deque
-from functools import lru_cache, total_ordering
+from functools import cache, lru_cache, total_ordering
 from heapq import heapify, heappop, heappush, heappushpop, heapreplace
 from itertools import combinations
 from itertools import combinations_with_replacement as combr
 from itertools import cycle, groupby, permutations, product, repeat
-from typing import (Callable, Collection, DefaultDict, Generic, Hashable,
-                    Iterable, Iterator, Mapping, Sequence, TypeVar)
+from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
+from typing import Generic, Hashable, TypeVar
 
 sys.setrecursionlimit(1 << 30)
 
@@ -256,21 +256,20 @@ def make_wadj(
 
 
 def bfs(
-    adj: Mapping[_N, Iterable[_N]], *starts: _N
+    adj: Mapping[_N, Iterable[_N]] | Callable[[_N], Iterable[_N]],
+    *starts: _N
 ) -> tuple[dict[_N, int], list[_N], dict[_N, _N]]:
     assert starts
+    if not callable(adj):
+        adj = adj.__getitem__
 
-    D = {}
-    Q = []
-    prev: dict[_N, _N] = {}
+    D, Q, prev = {}, [*starts], {}
     for s in starts:
-        D[s] = 0
-        Q.append(s)
-        prev[s] = s
+        D[s], prev[s] = 0, s
 
     for i in Q:
         d = D[i]
-        for j in adj[i]:
+        for j in adj(i):
             if j not in D:
                 D[j] = d + 1
                 prev[j] = i
@@ -280,10 +279,10 @@ def bfs(
 
 def dijkstra(
     adj: Mapping[_N, Iterable[tuple[_N, _W]]], *starts: _N, inf: _W = 1 << 30
-) -> tuple[DefaultDict[_N, _W], dict[_N, _N]]:
+) -> tuple[defaultdict[_N, _W], dict[_N, _N]]:
     assert starts
     zero = inf * 0
-    D: DefaultDict[_N, _W] = defaultdict(lambda: inf)
+    D: defaultdict[_N, _W] = defaultdict(lambda: inf)
     V = set()
     Q = []
     prev = {}
@@ -355,8 +354,6 @@ def rotate(M: Iterable[Iterable[_U]], times=1) -> list[list[_U]]:
 
 
 def print_coords(L: Collection[tuple[int, int]], empty=" "):
-    import collections.abc
-
     xs, ys = zip(*L)
     min_x, max_x = min(xs), max(xs)
     min_y, max_y = min(ys), max(ys)
@@ -365,7 +362,7 @@ def print_coords(L: Collection[tuple[int, int]], empty=" "):
 
     R = [[empty] * (max_x - min_x + 1) for _ in range(max_y - min_y + 1)]
 
-    if isinstance(L, collections.abc.Mapping):
+    if isinstance(L, Mapping):
         for (x, y), c in L.items():
             assert len(c) == 1, ((x, y), c)
             R[y - min_y][x - min_x] = c
