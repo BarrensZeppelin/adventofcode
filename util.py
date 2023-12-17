@@ -278,6 +278,36 @@ def bfs(
 
 
 def dijkstra(
+    adj, *starts: _N, inf: _W = 1 << 30,
+    heuristic = None,
+) -> tuple[defaultdict[_N, _W], dict[_N, _N]]:
+    assert starts
+    zero = inf * 0
+    D: defaultdict[_N, _W] = defaultdict(lambda: inf)
+    V = set()
+    Q = []
+    prev = {}
+    for s in starts:
+        D[s] = 0
+        Q.append((zero + (0 if heuristic is None else heuristic(s)), s))
+        prev[s] = s
+    heapify(Q)
+    while Q:
+        _, i = heappop(Q)
+        if i in V:
+            continue
+        V.add(i)
+        d = D[i]
+        for j, w in adj(i):
+            nd = d + w
+            if j not in V and nd < D[j]:
+                D[j] = nd
+                prev[j] = i
+                heappush(Q, (nd + (0 if heuristic is None else heuristic(j)), j))
+    return D, prev
+
+
+def dijkstra_old(
     adj: Mapping[_N, Iterable[tuple[_N, _W]]], *starts: _N, inf: _W = 1 << 30
 ) -> tuple[defaultdict[_N, _W], dict[_N, _N]]:
     assert starts
