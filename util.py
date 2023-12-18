@@ -372,7 +372,7 @@ def windows(L: Sequence[_U], S: int) -> list[Sequence[_U]]:
     return [L[i : i + S] for i in range(len(L) - S + 1)]
 
 
-def run_length_encoding(L: list[_U]) -> list[tuple[_U, int]]:
+def run_length_encoding(L: Iterable[_U]) -> list[tuple[_U, int]]:
     return [(c, len(list(g))) for c, g in groupby(L)]
 
 
