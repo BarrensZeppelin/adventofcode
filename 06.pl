@@ -1,25 +1,15 @@
 :- use_module(library(clpfd)).
 
-re_all(Pat, L, Ns) :- re_foldl([re_match{0:S}, [S|T], T]>>true, Pat, L, Ns, [], [capture_type(term)]).
-
 main :-
     read_string(user_input, _, S), split_string(S, "\n", "\n", Lines),
-    maplist(re_all("\\d+"), Lines, Input1),
-    !,
-    solve(Input1, Part1),
-    format("Part 1: ~d\n", [Part1]),
+    maplist({Lines}/[Parse, Res]>>(maplist(Parse, Lines, Input), solve(Input, Res)), [
+        [Line, Ns]>>re_foldl([_{0:N}, [N|T], T]>>true, "\\d+"/t, Line, Ns, [], []),
+        [Line, [V]]>>re_foldl([_{0:N}, A, B]>>(B is A*10+N), "\\d"/t, Line, 0, V, [])
+    ], Ans),
+    format("Part 1: ~d~nPart 2: ~d~n", Ans).
 
-    maplist(re_all("\\d"), Lines, Digits),
-    maplist([Ds, [Squashed]]>>foldl([D, Acc, Res]>>(Res is Acc * 10 + D), Ds, 0, Squashed), Digits, Input2),
-    solve(Input2, Part2),
-    format("Part 2: ~d\n", [Part2]).
-
-solve(T, D, W) :-
-    Hi is T // 2,
-    P in 0..Hi, P * (T - P) #> D,
-    once(labeling([min(P)], [P])),
-    W is T - 2 * P + 1.
-
-solve([Times, Distances], Res) :-
-    maplist(solve, Times, Distances, Wins),
-    foldl([W, Acc, Res]>>(Res is Acc * W), Wins, 1, Res).
+solve([[], []], 1).
+solve([[T|Ts], [D|Ds]], Res) :-
+    P #< T, P * (T - P) #> D, fd_size(P, W),
+    solve([Ts, Ds], Res1),
+    Res is Res1 * W.
