@@ -278,7 +278,7 @@ def bfs(
 
 
 def dijkstra(
-    adj, *starts: _N, inf: _W = 1 << 30,
+    adj, *starts: _N, inf: _W = 1 << 60,
     heuristic = None,
 ) -> tuple[defaultdict[_N, _W], dict[_N, _N]]:
     assert starts
@@ -308,7 +308,7 @@ def dijkstra(
 
 
 def dijkstra_old(
-    adj: Mapping[_N, Iterable[tuple[_N, _W]]], *starts: _N, inf: _W = 1 << 30
+    adj: Mapping[_N, Iterable[tuple[_N, _W]]], *starts: _N, inf: _W = 1 << 60
 ) -> tuple[defaultdict[_N, _W], dict[_N, _N]]:
     assert starts
     zero = inf * 0
