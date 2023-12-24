@@ -191,7 +191,7 @@ class Point(Generic[T]):
     __matmul__ = dot
 
     def cross(a, b: Point[T]) -> T:
-        assert len(a) == 2
+        # assert len(a) == 2
         return a.x * b.y - a.y * b.x
 
     def cross2(s, a: Point[T], b: Point[T]) -> T:
