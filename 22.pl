@@ -35,5 +35,5 @@ area([XL-XH, YL-YH, _], X, Y) :- between(XL, XH, X), between(YL, YH, Y).
 solve([], _) :- !.
 solve([I|Tail], Deleted) :-
     ht_put(Deleted, I, 0),
-    findall(J, (edge(J, I), forall(edge(J, K), ht_get(Deleted, K, 0))), New),
-    append(New, Tail, Q), solve(Q, Deleted).
+    findall(J, (edge(J, I), forall(edge(J, K), ht_get(Deleted, K, 0))), Q, Tail),
+    solve(Q, Deleted).
