@@ -1,6 +1,9 @@
+:- dynamic parent/2.
+
 % Straightforward (but unsatisfyingly procedural) implementation of Karger's algorithm.
 
 main :-
+    % set_random(seed(0)),
     read_string(user_input, _, S),
     findall(X-Y, (
         split_string(S, "\n", "\n", Lines), member(Line, Lines),
@@ -12,25 +15,27 @@ main :-
 
 solve(Edges, Nodes) :-
     length(Nodes, N),
+    retractall(parent(_, _)),
+    forall(member(X, Nodes), assertz(parent(X, X))),
     random_permutation(Edges, Perm),
-    ht_new(Parent),
-    contract(Perm, Parent, N),
+    contract(Perm, N),
     aggregate_all(count, (
-        member(A-B, Edges), find(A, X, Parent), find(B, Y, Parent), X \= Y
+        member(A-B, Edges), find(A, X), find(B, Y), X \= Y
     ), Cut),
     (Cut > 3 -> solve(Edges, Nodes);
         [A-_|_] = Edges,
-        find(A, X, Parent),
-        aggregate_all(count, (member(B, Nodes), find(B, X, Parent)), C),
+        find(A, X),
+        aggregate_all(count, (member(B, Nodes), find(B, X)), C),
         Ans is C * (N-C),
         writeln(Ans)).
 
-find(X, Y, Parent) :-
-    (ht_get(Parent, X, P) -> find(P, Y, Parent), ht_put(Parent, X, Y);
-        X = Y).
+find(X, Y) :-
+    parent(X, Z),
+    (X == Z -> Y = X; parent(Z, Z) -> Y = Z;
+     find(Z, Y), retract(parent(X, Z)), assertz(parent(X, Y))).
 
-contract(_, _, 2) :- !.
-contract([A-B|Tail], Parent, N) :-
-    find(A, X, Parent), find(B, Y, Parent),
-    (X = Y -> NN = N; NN is N-1, ht_put(Parent, X, Y)),
-    contract(Tail, Parent, NN).
+contract(_, 2) :- !.
+contract([A-B|Tail], N) :-
+    find(A, X), find(B, Y),
+    (X = Y -> NN = N; NN is N-1, retract(parent(X, X)), assertz(parent(X, Y))),
+    contract(Tail, NN).
