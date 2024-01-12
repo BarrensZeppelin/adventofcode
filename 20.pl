@@ -1,67 +1,63 @@
-:- use_module(library(dcg/basics)), use_module(library(dcg/high_order)).
-:- use_module(library(chr)).
+:- [library(dcg/basics), library(dcg/high_order)].
+:- [library(chr), library(aggregate), library(apply), library(apply_macros), library(yall)].
 :- dynamic adj/2.
 
 str(S) --> string(Cs), { string_codes(S, Cs) }.
 module(mod(Name, K, Adj)) -->
     ([K], { memberchk(K, `%&`) }; {K = 0'.}), str(Name), " -> ", sequence(str, ", ", Adj), "\n".
 
-:- chr_constraint counter/2, pulse/2.
+:- chr_constraint counter(+, +), pulse(+, +).
 
 counter(P, C), pulse(P, _) <=> NC is C+1, counter(P, NC).
 
+init_state(_, 0'%, fflop(0)).
+init_state(Name, 0'&, conj(Prev)) :- findall(P, (adj(P, Adj), memberchk(Name, Adj)), Prev).
+init_state(_, 0'., normal).
+
 main :-
-    phrase_from_stream(sequence(module, Mods), user_input),
+    open("20.in", read, Stream),
+    phrase_from_stream(sequence(module, Mods), Stream), !,
     forall(member(mod(Name, _, Adj), Mods), assertz(adj(Name, Adj))),
     compile_predicates([adj/2]),
 
-    ht_new(State),
-    foreach(member(mod(Name, 0'%, _), Mods), ht_put(State, Name, fflop(0))),
-    convlist({State}/[mod(Name, 0'&, _), _]>>(
-        findall(P, (adj(P, Adj), memberchk(Name, Adj)), Prev),
-        ht_put(State, Name, conj(Prev))
-    ), Mods, _), !,
+    maplist([mod(Name, K, _), Name-Spec]>>once(init_state(Name, K, Spec)), Mods, Pairs),
+    ht_pairs(State, Pairs),
 
-    (part1(State), fail; true),
-    part2(State).
+    ($(part1(State)), fail; true),
+    profile(part2(State)).
 
-part1(State) :-
+part1(State) =>
     counter(0, 0), counter(1, 0),
     foreach(between(1, 1000, _), press(State)),
     findall(C, current_chr_constraint(counter(_, C)), [L, H]),
     Part1 is L * H,
-    format("Part 1: ~d~n", [Part1]), !.
+    format("Part 1: ~d~n", [Part1]).
 
 press(State) :-
-    Q = [pulse("button", 0, "broadcaster")|Tail],
-    foldl(process(State), Q, Tail, []).
+    foldl({State}/[pulse(From, P, To), QT, NQT]>>(
+        pulse(P, From),
+        ht_put(State, To, NS, normal, OS),
+        (process(OS, From, P, NS, NP) ->
+            findall(pulse(To, NP, NTo), (adj(To, L), member(NTo, L)), QT, NQT)
+        ; QT = NQT, OS = NS)
+    ), [pulse("button", 0, "broadcaster")|Tail], Tail, []), !.
 
-process(State, pulse(From, P, To), QT, NQT) :-
-    pulse(P, From),
-    (ht_get(State, To, Spec) ->
-        (Spec = fflop(PS) ->
-            (P =:= 1 -> NQT = QT;
-                NP is 1-PS, ht_put(State, To, fflop(NP)), send(To, NP, QT, NQT));
-         Spec = conj(Lows),
-            (P =:= 1 -> subtract(Lows, [From], NLows); union(Lows, [From], NLows)),
-            (NLows == [] -> NP is 0; NP is 1),
-            ht_put(State, To, conj(NLows)), send(To, NP, QT, NQT));
-        send(To, P, QT, NQT)).
+process(normal, _, P, normal, P).
+process(fflop(P), _, 0, fflop(NP), NP) :- NP is 1-P.
+process(conj(Lows), From, P, conj(NLows), NP) :-
+    (P =:= 1 -> subtract(Lows, [From], NLows); union(Lows, [From], NLows)),
+    (NLows == [] -> NP is 0; NP is 1).
 
-send(From, V, QT, NQT) :-
-    findall(pulse(From, V, To), (adj(From, L), member(To, L)), QT, NQT).
-
-:- chr_constraint presses/1, first_high/2.
+:- chr_constraint presses(+natural), first_high(+, -).
 
 presses(X), pulse(_, "button") <=> Y is X+1, presses(Y).
-first_high(X, Y), presses(C) \ pulse(1, X) <=> var(Y) | Y = C.
+presses(C) \ first_high(X, Y), pulse(1, X) <=> Y = C.
 pulse(_, _) <=> true.
 
 part2(State) :-
     presses(0),
     findall(P, (adj(PP, ["rx"]), adj(P, Adj), memberchk(PP, Adj)), Prev),
-    maplist([P, H]>>first_high(P, H), Prev, Hs),
-    solve(State, Hs).
+    maplist(first_high, Prev, Hs), solve(State, Hs).
 
 solve(State, Hs) :- maplist(number, Hs) ->
     foldl([H, A, R]>>(R is H * A), Hs, 1, Part2),

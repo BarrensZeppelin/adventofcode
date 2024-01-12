@@ -3,7 +3,6 @@
 % is efficient but quite hacky.
 
 main :-
-    % set_random(seed(0)),
     read_string(user_input, _, S),
     findall(X-Y, (
         split_string(S, "\n", "\n", Lines), member(Line, Lines),
@@ -11,24 +10,20 @@ main :-
         member(Y, Ys)
     ), Edges),
     setof(X, Y^(member(X-Y, Edges); member(Y-X, Edges)), Nodes),
-    solve(Edges, Nodes).
+    length(Goals, 4), maplist(=(solve(Edges, Nodes, Ans)), Goals),
+    first_solution(Ans, Goals, []), writeln(Ans).
 
-solve(Edges, Nodes) :-
-    length(Nodes, N),
-    maplist([X,X-_]>>true, Nodes, Pairs), dict_create(P, _, Pairs),
-    random_permutation(Edges, Perm),
-    contract(P, Perm, N),
-    aggregate_all(count, (
-        member(A-B, Edges), get_dict(A, P, X), get_dict(B, P, Y), X \== Y
-    ), Cut),
-    (Cut > 3 -> solve(Edges, Nodes);
-        get_dict(_, P, X), $,
-        aggregate_all(count, (get_dict(_, P, Y), Y == X), C),
-        Ans is C * (N-C),
-        writeln(Ans)).
+solve(Edges, Nodes, Ans) =>
+    length(Nodes, N), % set_random(seed(0)),
+    pairs_keys_values(Pairs, Nodes, VNodes), dict_pairs(D, _, Pairs),
+    maplist({D}/[A-B, X-Y]>>(dict_create(S, _, [A-X, B-Y]), S :< D), Edges, VEdges),
+    repeat, % set-up done, try contracting in random orders
+    random_permutation(VEdges, Perm), contract(Perm, N),
+    aggregate_all(count, (member(A-B, Perm), A \== B), 3) ->
+    aggregate_all(count, ([A|_] = VNodes, member(B, VNodes), A == B), C),
+    Ans is C * (N-C).
 
-contract(_, _, 2) :- !.
-contract(P, [A-B|Tail], N) :-
-    get_dict(A, P, X), get_dict(B, P, Y),
+contract(_, 2) => !.
+contract([X-Y|Tail], N) =>
     (X == Y -> NN = N; NN is N-1, X = Y),
-    contract(P, Tail, NN).
+    contract(Tail, NN).
