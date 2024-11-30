@@ -1,0 +1,72 @@
+[tool.pyright]
+pythonVersion = "3.10"
+
+typeCheckingMode = "standard"
+enableExperimentalFeatures = true  # for TypedDict(closed=...) support
+reportImplicitStringConcatenation = "warning"
+reportMissingSuperCall = "warning"
+reportShadowedImports = "error"
+# reportImplicitOverride = "warning"
+reportUninitializedInstanceVariable = "error"
+reportUnnecessaryTypeIgnoreComment = "error"
+reportSelfClsParameterName = false
+reportConstantRedefinition = false
+# basedpyright rules
+strictGenericNarrowing = true
+reportImplicitRelativeImport = "error"
+reportUnsafeMultipleInheritance = "error"
+reportInvalidCast = "warning"
+reportUnusedParameter = "hint"
+reportUnannotatedClassAttribute = false
+reportImplicitAbstractClass = false
+
+[tool.ruff]
+required-version = ">=0.8.1"
+target-version = "py310"
+
+line-length = 114 # default is 88
+
+preview = true # enable preview features
+unsafe-fixes = true
+
+src = ["."]
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint]
+extend-select = [
+    "B", "I", "C4",       # flake8-bugbear, isort, flake8-comprehensions
+    "TC", "LOG", "SIM",   # flake8-type-checking, flake8-logging, flake8-simplify
+    "YTT", "PIE", "SLOT", # flake8-2020, flake8-pie, flake8-slots
+    "PERF", "UP", "RUF",  # Perflint, pyupgrade, ruff-specific rules
+    "TID",                # flake8-tidy-imports (enforce absolute imports)
+    "D200", "N9",         # One-line docstring, invalid module name
+    # Various Pylint Refactor rules
+    "PLR01", "PLR02", "PLR1", "PLR6",
+]
+
+ignore = [
+    "F4",
+    "SIM115",
+    "B008",
+    # This flags dict[A, B]() as missing a tuple parentheses, as it does not recognize the type context...
+    "RUF031",
+    "UP038",   # Allow isinstance check with tuple instead of type union
+    "B909",    # Allow modification of iterable in for loop
+    "PLR6201", # Allow membership tests on literal tuples (TODO: benchmark this vs. sets)
+    "SIM905",  # Allow "a b c".split()
+    "E741",    # Allow ambiguous variable names
+]
+
+allowed-confusables = [ "∪", "⊤" ]
+
+# Until https://github.com/astral-sh/ruff/issues/13960 is resolved
+extend-safe-fixes = ["TC00", "TID"]
+
+[tool.ruff.lint.ruff]
+parenthesize-tuple-in-subscript = true
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false  # avoid conflict with skip-magic-trailing-comma
+required-imports = ["from __future__ import annotations"]
