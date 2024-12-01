@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from util import *
 
-if sys.stdin.isatty() and len(sys.argv) == 1:
-    sys.stdin = open(__file__.replace("py", "in"))
+replace_stdin()
 
 res = 0
 

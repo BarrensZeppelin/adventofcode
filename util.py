@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+import argparse
 import math
 import os
 import re
 import sys
-import traceback
 from collections import Counter, defaultdict, deque
 from collections.abc import Callable, Collection, Hashable, Iterable, Iterator, Mapping, Sequence
 from functools import cache, lru_cache, total_ordering
@@ -432,6 +432,39 @@ def neighbours(x: int, y: int, dirs: Iterable[tuple[int, int]] = DIR, V=None) ->
             yield nx, ny
 
 
+_parser = argparse.ArgumentParser()
+_parser.add_argument("--sample", "-s", action="store_true")
+_parser.add_argument("--clear", "-c", "-f", action="store_true")
+_ARGS, _EXTRA = _parser.parse_known_args()
+
+
+def _get_day() -> int:
+    match = re.fullmatch(r"(\d\d).*\.py", os.path.basename(sys.argv[0]))
+    assert match is not None
+    return int(match.group(1))
+
+
+def replace_stdin():
+    if not sys.stdin.isatty() or _EXTRA:
+        return
+
+    day = _get_day()
+    p = Path(f"{day:02}.{'sin' if _ARGS.sample else 'in'}")
+    if _ARGS.sample:
+        if _ARGS.clear and p.exists():
+            p.unlink()
+
+        if not p.exists():
+            import subprocess
+
+            sample = subprocess.run(["xsel", "-b"], capture_output=True, text=True, check=True).stdout
+            assert sample.strip(), "Clipboard is empty!"
+            print(f"Writing sample\n-----\n{sample.strip()}\n-----\nto {p}")
+            p.write_text(sample)
+
+    sys.stdin = p.open()
+
+
 def submit(answer: object, *, part: Literal[1, 2] | None = None, day: int | None = None):
     import contextlib
     import json
@@ -441,10 +474,7 @@ def submit(answer: object, *, part: Literal[1, 2] | None = None, day: int | None
     STATE_FILE = Path(__file__).parent / ".state"
 
     if day is None:
-        caller = traceback.extract_stack(limit=2)[-2]
-        match = re.fullmatch(r"(\d\d).*\.py", os.path.basename(caller.filename))
-        assert match is not None
-        day = int(match.group(1))
+        day = _get_day()
 
     assert 1 <= day <= 25, day
 
@@ -461,6 +491,9 @@ def submit(answer: object, *, part: Literal[1, 2] | None = None, day: int | None
     print(f"Submitting day {day:02} part {part}:\n{answer}")
     if not sys.__stdin__.isatty():
         print("Aborting because stdin is redirected!")
+        return
+    if _ARGS.sample:
+        print("Aborting because --sample is set!")
         return
 
     stdin_copy = sys.stdin

@@ -18,7 +18,7 @@ def validate_session(session: requests.Session) -> bool:
     return r.status_code == 200 and r.url == test_url
 
 
-def get_session() -> requests.Session:
+def get_session(*, validate: bool = True) -> requests.Session:
     session_cookie: str | None
     try:
         with open(".session") as f:
@@ -35,7 +35,7 @@ def get_session() -> requests.Session:
         session = requests.Session()
         session.headers["User-Agent"] = "get_input.py @ github.com/BarrensZeppelin/adventofcode2024"
         session.cookies.set("session", session_cookie, domain=".adventofcode.com", path="/")
-        if validate_session(session):
+        if not validate or validate_session(session):
             return session
 
         print("That session cookie doesn't seem to work. Try again.")
@@ -43,7 +43,7 @@ def get_session() -> requests.Session:
 
 
 def submit_answer(day: int, part: Literal[1, 2], answer: str) -> str:
-    session = get_session()
+    session = get_session(validate=False)
     r = session.post(f"{URL_PREFIX}/day/{day}/answer", data={"level": part, "answer": answer})
     r.raise_for_status()
     return r.text
