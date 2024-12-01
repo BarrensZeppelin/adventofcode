@@ -25,7 +25,5 @@ for x in a:
     res += x * C2[x]
 
 
-print(res)
-# submit(1, res)
-submit(2, res)
-# prints(res)
+# print(res)
+submit(res)

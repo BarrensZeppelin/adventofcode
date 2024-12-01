@@ -1,4 +1,5 @@
 __pycache__
 *.in
-.session
+*.session
 .response
+.state

@@ -432,8 +432,13 @@ def neighbours(x: int, y: int, dirs: Iterable[tuple[int, int]] = DIR, V=None) ->
             yield nx, ny
 
 
-def submit(part: Literal[1, 2], answer: object, *, day: int | None = None):
+def submit(answer: object, *, part: Literal[1, 2] | None = None, day: int | None = None):
+    import contextlib
+    import json
+
     from get_input import submit_answer
+
+    STATE_FILE = Path(__file__).parent / ".state"
 
     if day is None:
         caller = traceback.extract_stack(limit=2)[-2]
@@ -442,18 +447,26 @@ def submit(part: Literal[1, 2], answer: object, *, day: int | None = None):
         day = int(match.group(1))
 
     assert 1 <= day <= 25, day
+
+    state: dict[str, object] = {}
+    if part is None:
+        with contextlib.suppress(FileNotFoundError):
+            state = json.loads(STATE_FILE.read_text())
+
+        part = 2 if str(day) in state else 1
+
     assert sys.__stdin__ is not None
 
     answer = str(answer)
-    print(f"SUBMIT:\n{answer}\nfor day {day:02} part {part}?", end="")
+    print(f"Submitting day {day:02} part {part}:\n{answer}")
     if not sys.__stdin__.isatty():
-        print("\nAborting because stdin is redirected!")
+        print("Aborting because stdin is redirected!")
         return
 
     stdin_copy = sys.stdin
     try:
         sys.stdin = sys.__stdin__
-        if (x := input(" [yN] ").lower()) != "y":
+        if (x := input("[yN] ").lower()) != "y":
             print(f"Aborting due to input: {x}")
             return
     finally:
@@ -470,3 +483,8 @@ def submit(part: Literal[1, 2], answer: object, *, day: int | None = None):
         raise
     else:
         print(page)
+
+        if part == 1 and ("That's the right answer" in page or 'class="day-success"' in page):
+            state[str(day)] = 0
+            STATE_FILE.write_text(json.dumps(state))
+            print("Updated state!")
