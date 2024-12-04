@@ -14,7 +14,7 @@ from heapq import heapify, heappop, heappush, heappushpop, heapreplace
 from itertools import combinations, cycle, groupby, permutations, product, repeat, starmap
 from itertools import combinations_with_replacement as combr
 from pathlib import Path
-from typing import Generic, Literal, TypeVar
+from typing import Final, Generic, Literal, TypeVar
 
 sys.setrecursionlimit(1 << 30)
 
@@ -521,3 +521,6 @@ def submit(answer: object, *, part: Literal[1, 2] | None = None, day: int | None
             state[str(day)] = 0
             STATE_FILE.write_text(json.dumps(state))
             print("Updated state!")
+
+        if match := re.search(r"rank \d+", page):
+            print(match.group(0))

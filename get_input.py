@@ -67,6 +67,8 @@ if __name__ == "__main__":
             with path.open("wb") as fb:
                 fb.write(r.content)
             print(f"Downloaded {path.name}")
+            lines = r.content.count(b'\n')
+            print(f"{lines} lines - {len(r.content)} bytes")
         else:
             if r.status_code == 404:
                 print(f"Day {i} not released yet")
