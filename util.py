@@ -16,6 +16,14 @@ from itertools import combinations_with_replacement as combr
 from pathlib import Path
 from typing import Final, Generic, Literal, TypeVar
 
+try:
+    import rich.traceback
+
+    rich.traceback.install(show_locals=True, indent_guides=False)
+    del rich
+except ImportError:
+    pass
+
 sys.setrecursionlimit(1 << 30)
 
 # E N W S
@@ -321,6 +329,39 @@ def topsort(adj: Mapping[_N, Iterable[_N]]) -> tuple[list[_N], bool]:
             if indeg[j] == 0:
                 Q.append(j)
     return Q, len(Q) != len(indeg)
+
+
+class fungraph(Generic[_N]):
+    def __init__(self, start: _N, next: Callable[[_N], _N], max_steps=10**6) -> None:
+        self.start: Final = start
+        self.next: Final = next
+        self.max_steps: Final = max_steps
+        self.dist: Final[dict[_N, int]] = {start: 0}
+        self.nodes: Final[list[_N]] = [start]
+        self.cycle: tuple[int, int] | None = None
+
+    def __getitem__(self, k: int) -> _N:
+        assert k >= 0
+        if k < len(self.nodes):
+            return self.nodes[k]
+        if self.cycle is None:
+            i = len(self.nodes) - 1
+            n = self.nodes[i]
+            for j in range(i + 1, k + 1):
+                if j >= self.max_steps:
+                    raise ValueError(f"Too many steps ({j})")
+
+                n = self.next(n)
+                if (pd := self.dist.get(n, -1)) != -1:
+                    self.cycle = pd, j - pd
+                    break
+                self.dist[n] = j
+                self.nodes.append(n)
+            else:
+                return n
+
+        a, clen = self.cycle
+        return self.nodes[a + (k - a) % clen]
 
 
 _U = TypeVar("_U")
