@@ -50,6 +50,7 @@ ignore = [
     "F4",
     "SIM115",
     "B008",
+    "RUF005",
     # This flags dict[A, B]() as missing a tuple parentheses, as it does not recognize the type context...
     "RUF031",
     "UP038",   # Allow isinstance check with tuple instead of type union
