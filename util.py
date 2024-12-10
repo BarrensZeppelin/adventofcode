@@ -8,13 +8,13 @@ import os
 import re
 import sys
 from collections import Counter, defaultdict, deque
-from collections.abc import Callable, Collection, Hashable, Iterable, Iterator, Mapping, Sequence
-from functools import cache, lru_cache, total_ordering
+from collections.abc import Callable, Collection, Generator, Hashable, Iterable, Iterator, Mapping, Sequence
+from functools import cache, cached_property, lru_cache, total_ordering
 from heapq import heapify, heappop, heappush, heappushpop, heapreplace
 from itertools import combinations, cycle, groupby, permutations, product, repeat, starmap
 from itertools import combinations_with_replacement as combr
 from pathlib import Path
-from typing import Final, Generic, Literal, TypeVar
+from typing import Final, Generic, Literal, TypeVar, cast, overload
 
 try:
     import rich.traceback
@@ -365,6 +365,8 @@ class fungraph(Generic[_N]):
 
 
 _U = TypeVar("_U")
+_T = TypeVar("_T")
+_MISSING: Final = object()
 
 
 def tile(L: Sequence[_U], S: int) -> list[Sequence[_U]]:
@@ -471,6 +473,53 @@ def neighbours(x: int, y: int, dirs: Iterable[tuple[int, int]] = DIR, V=None) ->
         nx, ny = x + dx, y + dy
         if V is None or (nx, ny) in V:
             yield nx, ny
+
+
+class Grid(list[list[_U]]):
+    def __init__(self, rows: Iterable[Iterable[_U]]) -> None:
+        super().__init__([row if isinstance(row, list) else list(row) for row in rows])
+        self.H: Final = len(self)
+        self.W: Final = len(self[0])
+
+    @overload
+    def inbounds(self, x: int, y: int) -> bool: ...
+    @overload
+    def inbounds(self, p: Iterable[int], /) -> bool: ...
+    def inbounds(self, x: int | Iterable[int], y: int | None = None) -> bool:
+        if y is None:
+            x, y = x
+        return 0 <= x < self.W and 0 <= y < self.H  # pyright: ignore[reportOperatorIssue]
+
+    @overload
+    def at(self, p: Iterable[int]) -> _U: ...
+    @overload
+    def at(self, p: Iterable[int], default: _T) -> _U | _T: ...
+    def at(self, p: Iterable[int], default: _T = _MISSING) -> _U | _T:
+        x, y = p
+        if self.inbounds(x, y):
+            return self[y][x]
+        elif default is _MISSING:
+            raise IndexError(f"{p} is out of bounds (W={self.W}, H={self.H})")
+        else:
+            return default
+
+    __call__ = at
+
+    @cached_property
+    def rev(self) -> dict[_U, list[Point[int]]]:
+        res: dict[_U, list[Point[int]]] = {}
+        for y, row in enumerate(self):
+            for x, c in enumerate(row):
+                res.setdefault(c, []).append(Point([x, y]))
+        return res
+
+    def adj(
+        self, dirs: Iterable[tuple[int, int]] = DIR, pred: Callable[[Point[int], Point[int]], bool] | None = None
+    ) -> dict[Point[int], list[Point[int]]]:
+        return {
+            p: [np for d in dirs if self.inbounds(np := p + d) and (pred is None or pred(p, np))]
+            for p in [Point([x, y]) for y in range(self.H) for x in range(self.W)]
+        }
 
 
 _parser = argparse.ArgumentParser()
