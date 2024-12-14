@@ -236,6 +236,9 @@ class Point(Generic[T]):
         co, si = math.cos(a), math.sin(a)
         return Point([s.x * co - s.y * si, s.x * si + s.y * co])
 
+    def neigh(self, dirs: Iterable[Iterable[T]] = DIR) -> list[Point[T]]:
+        return [self + d for d in dirs]
+
 
 _N = TypeVar("_N", bound=Hashable)
 _W = TypeVar("_W", int, float)
@@ -305,6 +308,22 @@ def dijkstra(adj, *starts: _N, inf: _W = 1 << 60, heuristic=None) -> tuple[defau
                 prev[j] = i
                 heappush(Q, (nd + (0 if heuristic is None else heuristic(j)), j))
     return D, prev
+
+
+def conn_components(adj: Mapping[_N, Iterable[_N]]) -> list[list[_N]]:
+    V: set[_N] = set()
+    res: list[list[_N]] = []
+    for i in list(adj):
+        if i not in V:
+            Q = [i]
+            V.add(i)
+            for i in Q:
+                for j in adj[i]:
+                    if j not in V:
+                        V.add(j)
+                        Q.append(j)
+            res.append(Q)
+    return res
 
 
 def make_path(frm: _N, to: _N, prev: Mapping[_N, _N]) -> list[_N]:

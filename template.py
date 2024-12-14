@@ -8,7 +8,7 @@ replace_stdin()
 """
 L = sys.stdin.read().split("\n\n")
 
-tile, rotate, Point, sign
+Grid, tile, rotate, Point, sign
 """
 
 res = 0
