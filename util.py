@@ -532,12 +532,15 @@ class Grid(list[list[_U]]):
                 res.setdefault(c, []).append(Point([x, y]))
         return res
 
+    def points(self) -> list[Point[int]]:
+        return [Point([x, y]) for y in range(self.H) for x in range(self.W)]
+
     def adj(
         self, dirs: Iterable[tuple[int, int]] = DIR, pred: Callable[[Point[int], Point[int]], bool] | None = None
     ) -> dict[Point[int], list[Point[int]]]:
         return {
             p: [np for d in dirs if self.inbounds(np := p + d) and (pred is None or pred(p, np))]
-            for p in [Point([x, y]) for y in range(self.H) for x in range(self.W)]
+            for p in self.points()
         }
 
 
