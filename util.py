@@ -242,6 +242,8 @@ class Point(Generic[T]):
 
 _N = TypeVar("_N", bound=Hashable)
 _W = TypeVar("_W", int, float)
+_TAR = TypeVar("_TAR")
+_ADJ: TypeAlias = Mapping[_N, Iterable[_TAR]] | Callable[[_N], Iterable[_TAR]]
 
 
 def make_adj(edges: Iterable[Iterable[_N]], both=False) -> defaultdict[_N, list[_N]]:
@@ -262,17 +264,12 @@ def make_wadj(edges: Iterable[tuple[_N, _N, _W]], both=False) -> defaultdict[_N,
     return adj
 
 
-def bfs(
-    adj: Mapping[_N, Iterable[_N]] | Callable[[_N], Iterable[_N]], *starts: _N
-) -> tuple[dict[_N, int], list[_N], dict[_N, _N]]:
+def bfs(adj: _ADJ[_N, _N], *starts: _N) -> tuple[dict[_N, int], list[_N], dict[_N, _N]]:
     assert starts
     if not callable(adj):
         adj = adj.__getitem__
 
-    D, Q, prev = {}, [*starts], {}
-    for s in starts:
-        D[s], prev[s] = 0, s
-
+    D, Q, prev = dict.fromkeys(starts, 0), [*starts], {s: s for s in starts}
     for i in Q:
         d = D[i]
         for j in adj(i):
@@ -283,18 +280,18 @@ def bfs(
     return D, Q, prev
 
 
-def dijkstra(adj, *starts: _N, inf: _W = 1 << 60, heuristic=None) -> tuple[defaultdict[_N, _W], dict[_N, _N]]:
+def dijkstra(
+    adj: _ADJ[_N, tuple[_N, _W]], *starts: _N, inf: _W = 1 << 60, heuristic: Callable[[_N], _W] | None = None
+) -> tuple[defaultdict[_N, _W], dict[_N, list[_N]]]:
     assert starts
+    if not callable(adj):
+        adj = adj.__getitem__
+
     zero = inf * 0
-    D: defaultdict[_N, _W] = defaultdict(lambda: inf)
-    V = set()
-    Q = []
-    prev = {}
-    for s in starts:
-        D[s] = zero
-        Q.append((zero + (0 if heuristic is None else heuristic(s)), s))
-        prev[s] = s
+    D = defaultdict(lambda: inf, dict.fromkeys(starts, zero))
+    Q, prev = [(zero + (0 if heuristic is None else heuristic(s)), s) for s in D], {s: [s] for s in D}
     heapify(Q)
+    V: set[_N] = set()
     while Q:
         _, i = heappop(Q)
         if i in V:
@@ -304,9 +301,10 @@ def dijkstra(adj, *starts: _N, inf: _W = 1 << 60, heuristic=None) -> tuple[defau
         for j, w in adj(i):
             nd = d + w
             if j not in V and nd < D[j]:
-                D[j] = nd
-                prev[j] = i
+                D[j], prev[j] = nd, [i]
                 heappush(Q, (nd + (0 if heuristic is None else heuristic(j)), j))
+            elif nd == D[j]:
+                prev[j].append(i)
     return D, prev
 
 
