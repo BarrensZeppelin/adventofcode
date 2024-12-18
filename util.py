@@ -14,12 +14,12 @@ from heapq import heapify, heappop, heappush, heappushpop, heapreplace
 from itertools import combinations, cycle, groupby, permutations, product, repeat, starmap
 from itertools import combinations_with_replacement as combr
 from pathlib import Path
-from typing import Final, Generic, Literal, TypeVar, cast, overload
+from typing import Final, Generic, Literal, TypeVar, cast, no_type_check, overload
 
 try:
     import rich.traceback
 
-    rich.traceback.install(show_locals=True, indent_guides=False)
+    rich.traceback.install(indent_guides=False)
     del rich
 except ImportError:
     pass
@@ -407,8 +407,8 @@ def rotate(M: Iterable[Iterable[_U]], times=1) -> list[list[_U]]:
     return M  # type: ignore
 
 
-def print_coords(L: Collection[tuple[int, int]], empty=" "):
-    xs, ys = zip(*L, strict=False)
+def print_coords(L: Collection[Iterable[int]], empty=" "):
+    xs, ys = zip(*L, strict=True)
     min_x, max_x = min(xs), max(xs)
     min_y, max_y = min(ys), max(ys)
     print("X", min_x, max_x)
@@ -466,46 +466,25 @@ def binary_search_float(f: Callable[[float], bool], lo: float, hi: float | None 
     return lo
 
 
-def grid_adj_2d(
-    W: int,
-    H: int,
-    dirs: Iterable[tuple[int, int]] = DIR,
-    pred: Callable[[tuple[int, int], tuple[int, int]], bool] | None = None,
-) -> dict[tuple[int, int], list[tuple[int, int]]]:
-    adj: dict[tuple[int, int], list[tuple[int, int]]] = {}
-    for y in range(H):
-        for x in range(W):
-            l = []
-            for dx, dy in dirs:
-                nx, ny = x + dx, y + dy
-                if 0 <= nx < W and 0 <= ny < H and (pred is None or pred((x, y), (nx, ny))):
-                    l.append((nx, ny))
-            adj[(x, y)] = l
-
-    return adj
-
-
-def neighbours(x: int, y: int, dirs: Iterable[tuple[int, int]] = DIR, V=None) -> Iterator[tuple[int, int]]:
-    for dx, dy in dirs:
-        nx, ny = x + dx, y + dy
-        if V is None or (nx, ny) in V:
-            yield nx, ny
-
-
 class Grid(list[list[_U]]):
     def __init__(self, rows: Iterable[Iterable[_U]]) -> None:
         super().__init__([row if isinstance(row, list) else list(row) for row in rows])
         self.H: Final = len(self)
         self.W: Final = len(self[0])
 
+    @classmethod
+    def empty(cls, W: int, H: int, fill: _U) -> Grid[_U]:
+        return cls([fill] * W for _ in range(H))
+
     @overload
     def inbounds(self, x: int, y: int) -> bool: ...
     @overload
     def inbounds(self, p: Iterable[int], /) -> bool: ...
-    def inbounds(self, x: int | Iterable[int], y: int | None = None) -> bool:
+    @no_type_check
+    def inbounds(self, x, y=None):
         if y is None:
             x, y = x
-        return 0 <= x < self.W and 0 <= y < self.H  # pyright: ignore[reportOperatorIssue]
+        return 0 <= x < self.W and 0 <= y < self.H
 
     @overload
     def at(self, p: Iterable[int]) -> _U: ...
@@ -521,6 +500,10 @@ class Grid(list[list[_U]]):
             return default
 
     __call__ = at
+
+    def set(self, p: Iterable[int], v: _U) -> None:
+        x, y = p
+        self[y][x] = v
 
     @cached_property
     def rev(self) -> dict[_U, list[Point[int]]]:
