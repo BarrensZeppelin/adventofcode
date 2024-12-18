@@ -11,7 +11,7 @@ from collections import Counter, defaultdict, deque
 from collections.abc import Callable, Collection, Generator, Hashable, Iterable, Iterator, Mapping, Sequence
 from functools import cache, cached_property, lru_cache, total_ordering
 from heapq import heapify, heappop, heappush, heappushpop, heapreplace
-from itertools import combinations, cycle, groupby, permutations, product, repeat, starmap
+from itertools import chain, combinations, cycle, groupby, permutations, product, repeat, starmap
 from itertools import combinations_with_replacement as combr
 from pathlib import Path
 from typing import Final, Generic, Literal, TypeVar, cast, no_type_check, overload
@@ -379,6 +379,22 @@ class fungraph(Generic[_N]):
 
         a, clen = self.cycle
         return self.nodes[a + (k - a) % clen]
+
+
+class UF(Generic[_N]):
+    def __init__(self):
+        self.parent: Final[dict[_N, _N]] = {}
+
+    def find(self, x: _N) -> _N:
+        if (px := self.parent.setdefault(x, x)) != x:
+            self.parent[x] = px = self.find(px)
+        return px
+
+    def join(self, x: _N, y: _N) -> bool:
+        if (px := self.find(x)) == (py := self.find(y)):
+            return False
+        self.parent[px] = py
+        return True
 
 
 _U = TypeVar("_U")
