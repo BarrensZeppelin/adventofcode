@@ -33,16 +33,22 @@ HEXDIR = ((2, 0), (1, 1), (-1, 1), (-2, 0), (-1, -1), (1, -1))
 OCTDIR = ((1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1))
 
 
+def _inp(inp: str | None = None) -> str:
+    inp = inp or sys.stdin.read()
+    assert inp, "No input"
+    return inp
+
+
 def ints(inp: str | None = None) -> list[int]:
-    return list(map(int, re.findall(r"-?\d+", inp or sys.stdin.read())))
+    return [*map(int, re.findall(r"-?\d+", _inp(inp)))]
 
 
 def floats(inp: str | None = None) -> list[float]:
-    return list(map(float, re.findall(r"-?\d+(?:\.\d*)?", inp or sys.stdin.read())))
+    return [*map(float, re.findall(r"-?\d+(?:\.\d*)?", _inp(inp)))]
 
 
 def lines(inp: str | None = None) -> list[str]:
-    return (inp or sys.stdin.read()).splitlines()
+    return _inp(inp).splitlines()
 
 
 def prints(*args, copy=len(sys.argv) == 1):
