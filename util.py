@@ -528,7 +528,11 @@ class Grid(list[list[_U]]):
         self[y][x] = v
 
     @cached_property
-    def rev(self) -> dict[_U, list[Point[int]]]:
+    def crev(self):
+        return self.rev
+
+    @property
+    def rev(self):
         res: dict[_U, list[Point[int]]] = {}
         for y, row in enumerate(self):
             for x, c in enumerate(row):
