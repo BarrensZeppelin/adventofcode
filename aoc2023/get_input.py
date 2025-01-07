@@ -35,7 +35,7 @@ while True:
             f.write(session_cookie)
 
     session = requests.Session()
-    session.headers["User-Agent"] = "get_input.py @ github.com/BarrensZeppelin/adventofcode2023"
+    session.headers["User-Agent"] = "get_input.py @ github.com/BarrensZeppelin/adventofcode"
     session.cookies.set("session", session_cookie, domain=".adventofcode.com", path="/")
     if validate_session(session):
         break

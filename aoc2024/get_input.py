@@ -33,7 +33,7 @@ def get_session(*, validate: bool = True) -> requests.Session:
                 f.write(session_cookie)
 
         session = requests.Session()
-        session.headers["User-Agent"] = "get_input.py @ github.com/BarrensZeppelin/adventofcode2024"
+        session.headers["User-Agent"] = "get_input.py @ github.com/BarrensZeppelin/adventofcode"
         session.cookies.set("session", session_cookie, domain=".adventofcode.com", path="/")
         if not validate or validate_session(session):
             return session
