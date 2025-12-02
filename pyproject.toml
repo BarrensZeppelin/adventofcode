@@ -5,7 +5,6 @@ typeCheckingMode = "standard"
 enableExperimentalFeatures = true  # for TypedDict(closed=...) support
 reportImplicitStringConcatenation = "warning"
 reportMissingSuperCall = "warning"
-reportShadowedImports = "error"
 # reportImplicitOverride = "warning"
 reportUninitializedInstanceVariable = "error"
 reportUnnecessaryTypeIgnoreComment = "error"
