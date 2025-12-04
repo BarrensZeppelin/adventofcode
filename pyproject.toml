@@ -1,5 +1,22 @@
+[project]
+name = "adventofcode"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "networkx>=3.6",
+    "requests>=2.32.5",
+    "rich>=14.2.0",
+    "z4-solver>=2024.12.14.1",
+]
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.35.0",
+    "ruff>=0.14.8",
+]
+
 [tool.pyright]
-pythonVersion = "3.10"
+pythonVersion = "3.11"
 
 typeCheckingMode = "standard"
 enableExperimentalFeatures = true  # for TypedDict(closed=...) support
@@ -21,7 +38,6 @@ reportImplicitAbstractClass = false
 
 [tool.ruff]
 required-version = ">=0.8.1"
-target-version = "py310"
 
 line-length = 114 # default is 88
 
@@ -36,33 +52,35 @@ skip-magic-trailing-comma = true
 [tool.ruff.lint]
 extend-select = [
     "B", "I", "C4",       # flake8-bugbear, isort, flake8-comprehensions
-    "TC", "LOG", "SIM",   # flake8-type-checking, flake8-logging, flake8-simplify
+    "TCH", "LOG", "SIM",  # flake8-type-checking, flake8-logging, flake8-simplify
     "YTT", "PIE", "SLOT", # flake8-2020, flake8-pie, flake8-slots
     "PERF", "UP", "RUF",  # Perflint, pyupgrade, ruff-specific rules
-    "TID",                # flake8-tidy-imports (enforce absolute imports)
     "D200", "N9",         # One-line docstring, invalid module name
     # Various Pylint Refactor rules
     "PLR01", "PLR02", "PLR1", "PLR6",
 ]
 
+unfixable = [
+    "B006",  # Allow using mutable types as function defaults
+    "B007",  # Don't remove unused loop variables
+    "F401",  # Don't remove unused imports
+    "F841",  # Don't remove unused variables
+    "RUF059", # Don't rename unused variables
+]
+
 ignore = [
     "F4",
-    "SIM115",
     "B008",
-    "RUF005",
     # This flags dict[A, B]() as missing a tuple parentheses, as it does not recognize the type context...
     "RUF031",
-    "UP038",   # Allow isinstance check with tuple instead of type union
     "B909",    # Allow modification of iterable in for loop
     "PLR6201", # Allow membership tests on literal tuples (TODO: benchmark this vs. sets)
-    "SIM905",  # Allow "a b c".split()
+    "PLR1702", # Too many nested blocks
     "E741",    # Allow ambiguous variable names
+    "B011",    # Allow `assert False`
 ]
 
 allowed-confusables = [ "∪", "⊤" ]
-
-# Until https://github.com/astral-sh/ruff/issues/13960 is resolved
-extend-safe-fixes = ["TC00", "TID"]
 
 [tool.ruff.lint.ruff]
 parenthesize-tuple-in-subscript = true

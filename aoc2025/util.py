@@ -14,7 +14,7 @@ from heapq import heapify, heappop, heappush, heappushpop, heapreplace
 from itertools import chain, combinations, cycle, groupby, permutations, product, repeat, starmap
 from itertools import combinations_with_replacement as combr
 from pathlib import Path
-from typing import Final, Generic, Literal, TypeVar, cast, no_type_check, overload
+from typing import Final, Generic, Literal, TypeAlias, TypeVar, no_type_check, overload
 
 try:
     import rich.traceback
@@ -576,9 +576,9 @@ def replace_stdin():
         if not p.exists():
             import subprocess
 
-            sample = subprocess.run(["wl-paste"], capture_output=True, text=True, check=True).stdout
+            sample = subprocess.run(["wl-paste"], capture_output=True, text=True, check=True).stdout.rstrip("\n")
             assert sample.strip(), "Clipboard is empty!"
-            print(f"Writing sample\n-----\n{sample.strip()}\n-----\nto {p}")
+            print(f"Writing sample\n-----\n{sample}\n-----\nto {p}")
             p.write_text(sample)
 
     sys.stdin = p.open()
