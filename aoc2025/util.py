@@ -186,7 +186,7 @@ class Point(Generic[T]):
         return Point([-x for x in s])
 
     def __abs__(s) -> Point[T]:
-        return s.map(abs)
+        return s.map(abs)  # pyright: ignore[reportArgumentType]
 
     def __mul__(s, d: T) -> Point[T]:
         return Point([a * d for a in s])
@@ -220,7 +220,7 @@ class Point(Generic[T]):
         return (a - s).cross_3d(b - s)
 
     def manh_dist(s) -> T:
-        return sum(s.map(abs))
+        return sum(s.map(abs))  # pyright: ignore[reportReturnType, reportArgumentType]
 
     def dist2(s) -> T:
         return sum(x * x for x in s)
@@ -383,8 +383,8 @@ class fungraph(Generic[_N]):
             else:
                 return n
 
-        a, clen = self.cycle
-        return self.nodes[a + (k - a) % clen]
+        a, cyclen = self.cycle
+        return self.nodes[a + (k - a) % cyclen]
 
 
 class UF(Generic[_N]):

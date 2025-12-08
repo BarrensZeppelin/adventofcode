@@ -36,6 +36,10 @@ reportUnusedParameter = "hint"
 reportUnannotatedClassAttribute = false
 reportImplicitAbstractClass = false
 
+executionEnvironments = [
+    { root = "aoc2025" },
+]
+
 [tool.ruff]
 required-version = ">=0.8.1"
 
