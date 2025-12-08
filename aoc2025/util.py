@@ -1,4 +1,4 @@
-# pyright: reportSelfClsParameterName=none, reportGeneralTypeIssues=none
+# pyright: reportSelfClsParameterName=none
 
 from __future__ import annotations
 
@@ -14,7 +14,10 @@ from heapq import heapify, heappop, heappush, heappushpop, heapreplace
 from itertools import chain, combinations, cycle, groupby, permutations, product, repeat, starmap
 from itertools import combinations_with_replacement as combr
 from pathlib import Path
-from typing import Final, Generic, Literal, TypeAlias, TypeVar, no_type_check, overload
+from typing import TYPE_CHECKING, Final, Generic, Literal, TypeAlias, TypeVar, cast, no_type_check, overload
+
+if TYPE_CHECKING:
+    from _typeshed import SupportsRichComparisonT
 
 try:
     import rich.traceback
@@ -98,6 +101,14 @@ def merge_intervals(intervals: list[tuple[int, int]]) -> list[tuple[int, int]]:
             b = max(b, c)
         S.append((a, b))
     return S
+
+
+def minmax(xs: Iterable[SupportsRichComparisonT]) -> tuple[SupportsRichComparisonT, SupportsRichComparisonT]:
+    it = iter(xs)
+    mn = mx = next(it)
+    for x in it:
+        mn, mx = min(mn, x), max(mx, x)
+    return mn, mx
 
 
 T = TypeVar("T", int, float)
@@ -246,6 +257,32 @@ class Point(Generic[T]):
         return [self + d for d in dirs]
 
 
+def area2(ps: Iterable[Point[T]]) -> T:
+    "Twice the signed area of a polygon"
+    ps = list(ps)
+    return sum(a.cross(b) for a, b in zip(ps, ps[1:] + ps[:1], strict=True))  # pyright: ignore[reportReturnType]
+
+
+def picks_theorem(ps: Iterable[Point[int]]):
+    "A = i + b/2 - 1. Returns area, interior points, boundary points"
+    ps = list(ps)
+    b = sum(math.gcd(*a - b) for a, b in zip(ps, ps[1:] + ps[:1], strict=True))
+    A, r = divmod(abs(area2(ps)), 2)
+    assert b % 2 == 0 and r == 0, (b, r)
+    i = A - b // 2 + 1
+    return A, i, b
+
+
+def convex_hull(P: Iterable[Point[T]]) -> list[Point[T]]:
+    P = sorted(P)
+    H = P[:0]
+    for p in P + P[::-1]:
+        while len(H) > 1 and H[-2].cross2(H[-1], p) <= 0 and not H[-2] < H[-1] > p:
+            H.pop()
+        H += p,
+    return H[:-1]
+
+
 _N = TypeVar("_N", bound=Hashable)
 _W = TypeVar("_W", int, float)
 _TAR = TypeVar("_TAR")
@@ -287,11 +324,17 @@ def bfs(adj: _ADJ[_N, _N], *starts: _N) -> tuple[dict[_N, int], list[_N], dict[_
 
 
 def dijkstra(
-    adj: _ADJ[_N, tuple[_N, _W]], *starts: _N, inf: _W = 1 << 60, heuristic: Callable[[_N], _W] | None = None
+    adj: _ADJ[_N, tuple[_N, _W]],
+    *starts: _N,
+    inf: _W = 1 << 60,
+    heuristic: Callable[[_N], _W] | None = None,
+    target: Callable[[_N], bool] | _N | None = None,
 ) -> tuple[defaultdict[_N, _W], dict[_N, list[_N]]]:
     assert starts
     if not callable(adj):
         adj = adj.__getitem__
+    if target is not None and not callable(target):
+        target = target.__eq__
 
     zero = inf * 0
     D = defaultdict(lambda: inf, dict.fromkeys(starts, zero))
@@ -302,6 +345,9 @@ def dijkstra(
         _, i = heappop(Q)
         if i in V:
             continue
+        if target is not None and target(i):
+            break
+
         V.add(i)
         d = D[i]
         for j, w in adj(i):
@@ -402,6 +448,13 @@ class UF(Generic[_N]):
         self.parent[px] = py
         return True
 
+    def sets(self) -> list[list[_N]]:
+        res = {n: [n] for n, p in self.parent.items() if n == p}
+        for n in self.parent:
+            if (p := self.find(n)) != n:
+                res[p].append(n)
+        return list(res.values())
+
 
 _U = TypeVar("_U")
 _T = TypeVar("_T")
@@ -416,6 +469,14 @@ def tile(L: Sequence[_U], S: int) -> list[Sequence[_U]]:
 def windows(L: Sequence[_U], S: int) -> list[Sequence[_U]]:
     assert len(L) >= S
     return [L[i : i + S] for i in range(len(L) - S + 1)]
+
+
+def windows2(L: Sequence[_U], S: int) -> Generator[deque[_U], None, None]:
+    assert len(L) >= S
+    d = deque(L[: S - 1], maxlen=S)
+    for x in L[S - 1 :]:
+        d.append(x)
+        yield d
 
 
 def run_length_encoding(L: Iterable[_U]) -> list[tuple[_U, int]]:
@@ -549,6 +610,131 @@ class Grid(list[list[_U]]):
             p: [np for d in dirs if self.inbounds(np := p + d) and (pred is None or pred(p, np))]
             for p in self.points()
         }
+
+    def line(self, a: Iterable[int], b: Iterable[int]) -> list[_U]:
+        "Returns elements on the horizontal/vertical/diagonal line from a to b (inclusive)"
+        a, b = Point([*a]), Point([*b])
+        steps = max(abs(d := b - a))
+        d //= steps
+        assert a + d * steps == b
+        return [self(p) for i in range(steps + 1) if self.inbounds(p := a + d * i)]
+
+
+# BinaryLifting(lambda u: (parent[u], data[u]), 0, lambda x, y: x + y)
+class BinaryLifting(Generic[_N, _U]):
+    "Utility class for evaluating functions over paths on finite functional graphs."
+
+    MAX_NODES = 10**6
+
+    @overload
+    def __init__(self, f: Callable[[_N], _N]) -> None: ...
+
+    @overload
+    def __init__(self, f: Callable[[_N], tuple[_N, _U]], unit: _U, merge: Callable[[_U, _U], _U]) -> None: ...
+
+    def __init__(
+        self,
+        f: Callable[[_N], _N] | Callable[[_N], tuple[_N, _U]],
+        unit: _U | None = None,
+        merge: Callable[[_U, _U], _U] = lambda x, y: x,
+    ):
+        self.unit: Final = cast("_U", unit)
+        self.f: Final = cast("Callable[[_N], tuple[_N, _U]]", f if unit is not None else lambda x: (f(x), None))
+        self.merge: Final = merge
+
+        self._cache: Final[list[dict[_N, tuple[_N, _U]]]] = [{} for _ in range(64)]
+        self._depth: Final[dict[_N, int]] = {}
+
+    def cf(self, x: _N, bit: int) -> tuple[_N, _U]:
+        C = self._cache[bit]
+        if r := C.get(x):
+            assert len(C) < self.MAX_NODES
+            return r
+        if bit == 0:
+            r = self.f(x)
+        else:
+            y, v1 = self.cf(x, bit - 1)
+            y, v2 = self.cf(y, bit - 1)
+            r = y, self.merge(v1, v2)
+
+        C[x] = r
+        return r
+
+    def succ(self, x: _N, k: int) -> tuple[_N, _U]:
+        v = self.unit
+        for i in range(k.bit_length()):
+            if k & (1 << i):
+                x, vc = self.cf(x, i)
+                v = self.merge(v, vc)
+
+        return x, v
+
+    # The following methods are only useful on forests
+    def _root(self, x: _N) -> bool:
+        return self.f(x)[0] == x
+
+    def depth(self, ox: _N) -> int:
+        if (d := self._depth.get(ox, -1)) == -1:
+            d = 0
+            if not self._root(ox):
+                for bit in range(64):
+                    if self._root(self.cf(ox, bit)[0]):
+                        break
+                else:
+                    raise AssertionError("Not in a tree")
+
+                x, d = ox, 1
+                for i in range(bit, -1, -1):
+                    j, _ = self.cf(x, i)
+                    if not self._root(j):
+                        x = j
+                        d += 1 << i
+
+                assert self._root(self.f(x)[0])
+
+            self._depth[ox] = d
+
+        return d
+
+    def lca(self, x: _N, y: _N, data_in_nodes: bool = False) -> tuple[_N, _U]:
+        "Returns the lowest common ancestor of x and y, and the data associated with the path."
+        dx, dy = self.depth(x), self.depth(y)
+        if dx < dy:
+            y, v = self.succ(y, dy - dx)
+        elif dx > dy:
+            x, v = self.succ(x, dx - dy)
+        else:
+            v = self.unit
+
+        if x != y:
+            for i in reversed(range(min(dx, dy).bit_length())):
+                (a, v1), (b, v2) = self.cf(x, i), self.cf(y, i)
+                if a != b:
+                    x, y, v = a, b, self.merge(v, self.merge(v1, v2))
+
+            (x, v1), (y, v2) = self.f(x), self.f(y)
+            assert x == y, "Not in the same tree"
+            v = self.merge(v, self.merge(v1, v2))
+
+        if data_in_nodes:
+            v = self.merge(v, self.f(x)[1])
+
+        return x, v
+
+
+def adj_to_parent(adj: Mapping[_N, Iterable[_N]], root: _N | None = None) -> dict[_N, _N]:
+    if root is None:
+        root = next(iter(adj))
+
+    Q, parent = [root], {root: root}
+    for i in Q:
+        for j in adj[i]:
+            if j not in parent:
+                parent[j] = i
+                Q.append(j)
+            else:
+                assert parent[i] == j, "Not a tree"
+    return parent
 
 
 _parser = argparse.ArgumentParser()
